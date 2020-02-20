@@ -17,3 +17,13 @@
 	((<= i 0) nil)
 	(t (list* (* (expt -1 (+ i 1)) (expt 2 (* -1 i))) (seq (- i 1))))
 ))
+
+(defun build(pos lst)
+	(cond 
+	((> (+ (* pos 2) 1) (list-length lst)) )
+	((< (nth pos lst) (nth (+ (* pos 2) 1) lst))  (swapinlist pos (+ (* pos 2) 1) lst))
+	((< (nth pos lst) (nth (+ (* pos 2) 2) lst))  (swapinlist pos (+ (* pos 2) 2) lst))
+	(t (build (+ pos 1) lst))
+	))
+
+(write (build 0 '(7 1213 12890 728 8107 929 192 8091)))
