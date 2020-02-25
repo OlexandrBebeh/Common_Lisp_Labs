@@ -15,9 +15,9 @@
 (defun build(pos lst)
 	(cond 
 	((> (+ (* pos 2) 1) (- (list-length lst) 1)) lst)	
-	((> (length (nth pos lst)) (length (nth (+ (* pos 2) 1) lst))) (build (+ pos 1) (swapinlist pos (+ (* pos 2) 1) lst)))
+	((string> (nth pos lst) (nth (+ (* pos 2) 1) lst)) (build (+ pos 1) (swapinlist pos (+ (* pos 2) 1) lst)))
 	((> (+ (* pos 2) 2) (- (list-length lst) 1)) lst)
-	((> (length (nth pos lst)) (length (nth (+ (* pos 2) 2) lst))) (build (+ pos 1) (swapinlist pos (+ (* pos 2) 2) lst)))
+	((string> (nth pos lst) (nth (+ (* pos 2) 2) lst)) (build (+ pos 1) (swapinlist pos (+ (* pos 2) 2) lst)))
 	(t (build (+ pos 1) lst))
 	))
 
