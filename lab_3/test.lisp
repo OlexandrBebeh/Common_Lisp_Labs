@@ -8,9 +8,7 @@
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
-
-
-
+(load "select.lisp")
 
 (defun split-by-one-dot (string)
     (loop for i = 0 then (1+ j)
@@ -30,11 +28,8 @@
 
 (defun load-table(tableName)
 	(cond
-		((string= tableName "map_zal-skl9.csv") (pprint map_zal))
-		((string= tableName "mp-assistants.csv") (pprint mp_assistants))
-		((string= tableName "plenary_register_mps-skl9.tsv") (plenary_register_mps))
-		((string= (get-last (split-by-one-dot tableName)) "csv") (simple-table:read-csv tableName))
-		((string= (get-last (split-by-one-dot tableName)) "tsv") (simple-table:read-tsv tableName))
+		((string= (get-last (split-by-one-dot tableName)) "csv") (simple-table:read-csv tableName t))
+		((string= (get-last (split-by-one-dot tableName)) "tsv") (simple-table:read-tsv tableName t))
 		(t (print "file type not define"))
 )
 )
@@ -61,12 +56,6 @@
     (close in)))
 )
 
-(defun inquiry-to-db(str)
-	(cond
-		((string-equal (car (split-by-one-space str))  "SELECT") (select-inquiry  (cdr (split-by-one-space str))))
-		(t (pprint "command not found;("))
-	)
-)
 
 
 
@@ -83,15 +72,21 @@
 	(subseq commandQuery 0 openBracketPosition)
 	)
 )
+(defun inquiry-to-db(str)
+	(cond
+		((string-equal (car (split-by-one-space (cut-parameter str)))  "SELECT") (select-inquiry  (cdr (split-by-one-space (cut-parameter str)))))
+		(t (pprint "Error"))
+	)
+)
 
 
 (defun execute-command(str)
 	(let ((command (parse-command str)))
 	(cond
-	  ((string= command "exit") (exit))
-	  ((string= command "inquiry") (inquiry-to-db (cut-parameter str)))
-	  ((string= command "load") (load-table (cut-parameter str)))
-	  ((string= command "show") (read-file (cut-parameter str)))
+	  ((string-equal command "exit") (exit))
+	  ((string-equal command "inquiry") (inquiry-to-db str))
+	  ((string-equal command "load") (load-table (cut-parameter str)))
+	  ((string-equal command "show") (read-file (cut-parameter str)))
 	  (t (pprint "Error: entered command not fund!!!"))
 	  )
 	)
@@ -103,12 +98,11 @@
     (terpri)
     (princ "[user]:")
     (terpri)
-    (if (string= (execute-command (read-line)) "EXIT")
-      (return)
-      ()
-      )
+    (execute-command (read-line))
     )
 )
 
-(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
+
+(execute-command "inquiry(SELECT row,col,pos_x from map_zal-skl9.csv)")
+;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 
