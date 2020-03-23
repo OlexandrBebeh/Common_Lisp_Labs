@@ -92,18 +92,24 @@
 )
 )
 
+(defun build-distinct(cols lst)
+(
+simple-table:distinct (simple-table:read-csv (car (cdr lst)) t) (car (get-list-of-collumns (aref (simple-table:read-csv (car (cdr lst)) 0) cols))
+)
+)
+
+(defun select-distinct(lst)
+(build-distinct (split-by-one-comma (car lst)) (cdr lst)
+)
+)
+
 (defun select-inquiry(lst)
 (cond
-((string-equal (car lst) "distinct") nil)
+((string-equal (car lst) "distinct") (select-distinct (cdr lst)))
 (t (chek-from (split-by-one-comma (car lst)) (cdr lst)))
 )
 )
-(defun foo1(lst1  lst2)
-(cond
-	((null lst1) nil)
-	(t (list ))
-)
-)
+
 ;(write (simple-table:read-csv (car '("test.csv"))))
 ;(write (get-list-of-collumns (simple-table:get-row 0 test) '("20" "30")))
 
