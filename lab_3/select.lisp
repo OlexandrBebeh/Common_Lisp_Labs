@@ -3,14 +3,16 @@
 (asdf:load-system 'cl-simple-table)
 
 (load "func.lisp")
+(load "where.lisp")
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
-(defun create-list-of-collumns(vec lst n)
+
+(defun create-list-of-collumns(vec lst)
 (cond 
-((= (length vec) n) nil)
-((string-intersection (aref vec n) lst) (list* n (create-list-of-collumns vec lst (+ n 1))))
-(t (create-list-of-collumns vec lst (+ n 1)))
+((null lst) nil)
+((string-intersection (car lst) (vector-to-list vec 0)) (list* (position-col (car lst) vec 0) (create-list-of-collumns vec (cdr lst))))
+(t (create-list-of-collumns vec (cdr lst)))
 )
 )
 
@@ -22,7 +24,7 @@
 	)
 )
 (defun get-list-of-collumns(vec lst)
-(select-all lst (create-list-of-collumns vec lst 0) (length vec))
+(select-all lst (create-list-of-collumns vec lst) (length vec))
 )
 
 
@@ -37,10 +39,12 @@
 
 (defun chek-from(cols lst)
 (cond
-((string-equal "FROM" (car lst)) (select-create-table cols (load-table (car (cdr lst)) )))
+((string-equal "FROM" (car lst))  (select-create-table cols (where-command (cut-list-to-el lst "where") (load-table (car (cut-list-to-el lst "from"))))))
 (t (pprint "FROM not found"))
 )
 )
+
+
 (defun collum-of-table-to-list(table n)
 	(cond 
 	((= n (length table)) nil)
@@ -63,10 +67,10 @@
 )
 )
 
-(defun build-distincts-list(cols lst)
+(defun build-distincts-list(cols table)
 	(make-distinct-list
-		(collum-of-table-to-list (simple-table:distinct (load-table (car (cdr lst))) (car (get-list-of-collumns (aref (load-table (car (cdr lst))) 0) cols))) 0)
-		(simple-table:select (load-table (car (cdr lst))) (car (get-list-of-collumns (aref (load-table (car (cdr lst))) 0) cols)))
+		(collum-of-table-to-list (simple-table:distinct table (car (get-list-of-collumns (aref table 0) cols))) 0)
+		(simple-table:select table (car (get-list-of-collumns (aref table 0) cols)))
 		0
 	)
 )
@@ -79,9 +83,10 @@
 )
 
 (defun select-distinct(lst)
-(get-distinct-rows
-	(reverse (build-distincts-list (split-by-one-comma (car lst)) (cdr lst)))
-	(chek-from (split-by-one-comma (car lst)) (cdr lst))
+(let ((table (chek-from (split-by-one-comma (car lst)) (cdr lst))))
+	(get-distinct-rows
+		(reverse (build-distincts-list (split-by-one-comma (car lst)) table))
+		table)
 )
 )
 
@@ -92,7 +97,10 @@
 )
 )
 
-;(write )
+
+
+;(write (select-inquiry '("distinct" "row,col,col" "from" "map_zal-skl9.csv" "where" "row=2")))
+
 ;(write (simple-table:distinct (load-table "map_zal-skl9.csv") 0))
 ;(write (build-distincts-list '("row") '("from" "map_zal-skl9.csv")))
 ;(write (build-distinct '("20") '("from" "test.csv")))

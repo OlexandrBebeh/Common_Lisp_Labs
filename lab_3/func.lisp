@@ -8,6 +8,17 @@
           collect (subseq string i j)
           while j))
 
+(defun split-by-one-equal (string)
+    (loop for i = 0 then (1+ j)
+          as j = (position #\= string :start i)
+          collect (subseq string i j)
+          while j))
+
+(defun split-by-one-less (string)
+    (loop for i = 0 then (1+ j)
+          as j = (position #\< string :start i)
+          collect (subseq string i j)
+          while j))
 
 (defun get-last(lst)
 	(cond 
@@ -68,5 +79,20 @@
 		((string-equal str (car lst)) t)
 		(t (string-intersection str (cdr lst)))
 	)
+)
+
+(defun cut-list-to-el(lst str)
+(cond
+((null lst) lst)
+((string-equal (car lst) str) (cdr lst))
+(t (cut-list-to-el (cdr lst) str))
+)
+)
+
+(defun position-col(str vec n)
+(cond
+((string-equal str (aref vec n)) n)
+(t (position-col str vec (+ n 1)))
+)
 )
 

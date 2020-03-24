@@ -57,6 +57,6 @@
 )
 
 
-(write (execute-command "inquiry(SELECt distinct row,* from map_zal-skl9.csv)"))
+(write (execute-command "inquiry(SELECt col from map_zal-skl9.csv where row<10)"))
 ;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 
