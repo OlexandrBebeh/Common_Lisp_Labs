@@ -2,59 +2,9 @@
 (load "cl-simple-table-master/cl-simple-table.asd")
 (asdf:load-system 'cl-simple-table)
 
+(load "func.lisp")
 
 (defvar test (simple-table:read-csv #P"test.csv"))
-
-(defun split-by-one-dot (string)
-    (loop for i = 0 then (1+ j)
-          as j = (position #\. string :start i)
-          collect (subseq string i j)
-          while j)
-)
-
-(defun get-last(lst)
-	(cond 
-		((null (cdr lst)) (car lst))
-		(t (get-last (cdr lst)))
-		)
-)
-(defun generation(n)
-	(cond
-		((= n 0) nil)
-		(t (list* (- n 1) (generation (- n 1))))
-	)
-)
-
-(defun load-table(tableName)
-	(cond
-		((string= (get-last (split-by-one-dot tableName)) "csv") (simple-table:read-csv tableName t))
-		((string= (get-last (split-by-one-dot tableName)) "tsv") (simple-table:read-tsv tableName t))
-		(t (print "file type not define"))
-)
-)
-
-(defun split-by-one-comma(string)
-    (loop for i = 0 then (1+ j)
-          as j = (position #\, string :start i)
-          collect (subseq string i j)
-          while j)
-)
-
-(defun vector-to-list(vec n)
-	(cond
-		((= (length vec) n) nil)
-		(t (list* (aref vec n) (vector-to-list vec (+ n 1))))
-	)
-)
-
-
-(defun string-intersection(str lst)
-	(cond
-		((null lst) nil)
-		((string-equal str (car lst)) t)
-		(t (string-intersection str (cdr lst)))
-	)
-)
 
 (defun create-list-of-collumns(vec lst n)
 (cond 
@@ -63,6 +13,7 @@
 (t (create-list-of-collumns vec lst (+ n 1)))
 )
 )
+
 (defun select-all(lst1 lst2 n)
 	(cond
 		((null lst1) nil)
@@ -80,26 +31,57 @@
 	(let ((listOfCol (get-list-of-collumns (aref table 0) cols)))
 		(cond
 			((null listOfCol) nil)
-			(t (print (simple-table:select1 table listOfCol)))
+			(t (simple-table:select1 table listOfCol))
 		))
 )
 
-
 (defun chek-from(cols lst)
 (cond
-((string-equal "FROM" (car lst)) (select-create-table cols (simple-table:read-csv (car (cdr lst)) t)))
+((string-equal "FROM" (car lst)) (select-create-table cols (load-table (car (cdr lst)) )))
 (t (pprint "FROM not found"))
 )
 )
-
-(defun build-distinct(cols lst)
-(
-simple-table:distinct (simple-table:read-csv (car (cdr lst)) t) (car (get-list-of-collumns (aref (simple-table:read-csv (car (cdr lst)) 0) cols))
+(defun collum-of-table-to-list(table n)
+	(cond 
+	((= n (length table)) nil)
+	(t (list* (aref (aref table n) 0) (collum-of-table-to-list table (+ n 1))))
+	)
 )
+
+(defun make-distinct-list(lst table n)
+(cond
+	((null lst) nil)
+	((stringp (car lst)) (cond
+				((string= (car lst) (aref (aref table n) 0)) (list* n (make-distinct-list (cdr lst) table (+ n 1))))
+				(t (make-distinct-list lst table  (+ n 1)))
+				))
+	((numberp (car lst))(cond
+				((= (car lst) (aref (aref table n) 0)) (list* n (make-distinct-list (cdr lst) table (+ n 1))))
+				(t (make-distinct-list lst table (+ n 1)))
+				))
+	(t (make-distinct-list lst table (+ n 1)))
+)
+)
+
+(defun build-distincts-list(cols lst)
+	(make-distinct-list
+		(collum-of-table-to-list (simple-table:distinct (load-table (car (cdr lst))) (car (get-list-of-collumns (aref (load-table (car (cdr lst))) 0) cols))) 0)
+		(simple-table:select (load-table (car (cdr lst))) (car (get-list-of-collumns (aref (load-table (car (cdr lst))) 0) cols)))
+		0
+	)
+)
+
+(defun get-distinct-rows(lst table)
+	(cond 
+		((null lst) (simple-table:make-table))
+		(t (simple-table:add-to-table (aref table (car lst)) (get-distinct-rows (cdr lst) table) ))
+	)
 )
 
 (defun select-distinct(lst)
-(build-distinct (split-by-one-comma (car lst)) (cdr lst)
+(get-distinct-rows
+	(reverse (build-distincts-list (split-by-one-comma (car lst)) (cdr lst)))
+	(chek-from (split-by-one-comma (car lst)) (cdr lst))
 )
 )
 
@@ -110,9 +92,13 @@ simple-table:distinct (simple-table:read-csv (car (cdr lst)) t) (car (get-list-o
 )
 )
 
+;(write )
+;(write (simple-table:distinct (load-table "map_zal-skl9.csv") 0))
+;(write (build-distincts-list '("row") '("from" "map_zal-skl9.csv")))
+;(write (build-distinct '("20") '("from" "test.csv")))
 ;(write (simple-table:read-csv (car '("test.csv"))))
 ;(write (get-list-of-collumns (simple-table:get-row 0 test) '("20" "30")))
 
-;(write (string-intersection "20" (vector-to-list (simple-table:get-row 0 test) 0)))
+;(write ((string-intersection "20" (vector-to-list (simple-table:get-row 0 test) 0))))
 
 ;(write (coerce (aref (simple-table:get-row 0 test) 6) 'character))

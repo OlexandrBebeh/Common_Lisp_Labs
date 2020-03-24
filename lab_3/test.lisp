@@ -8,54 +8,8 @@
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
+(load "func.lisp")
 (load "select.lisp")
-
-(defun split-by-one-dot (string)
-    (loop for i = 0 then (1+ j)
-          as j = (position #\. string :start i)
-          collect (subseq string i j)
-          while j))
-
-
-(defun get-last(lst)
-	(cond 
-		((null (cdr lst)) (car lst))
-		(t (get-last (cdr lst)))
-		)
-)
-
-
-
-(defun load-table(tableName)
-	(cond
-		((string= (get-last (split-by-one-dot tableName)) "csv") (simple-table:read-csv tableName t))
-		((string= (get-last (split-by-one-dot tableName)) "tsv") (simple-table:read-tsv tableName t))
-		(t (print "file type not define"))
-)
-)
-
-(defun split-by-one-space (string)
-    (loop for i = 0 then (1+ j)
-          as j = (position #\Space string :start i)
-          collect (subseq string i j)
-          while j))
-
-
-(defun split-by-one-comma(string)
-    (loop for i = 0 then (1+ j)
-          as j = (position #\, string :start i)
-          collect (subseq string i j)
-          while j))
-
-
-(defun read-file(nameFile)
-(let ((in (open nameFile :if-does-not-exist nil)))
-  (when in
-    (loop for line = (read-line in nil)
-         while line do (format t "~a~%" line))
-    (close in)))
-)
-
 
 
 
@@ -103,6 +57,6 @@
 )
 
 
-(execute-command "inquiry(SELECT row,col,pos_x from map_zal-skl9.csv)")
+(write (execute-command "inquiry(SELECt distinct row,* from map_zal-skl9.csv)"))
 ;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 
