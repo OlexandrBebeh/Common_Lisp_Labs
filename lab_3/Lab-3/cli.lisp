@@ -6,11 +6,8 @@
 (defvar mp_assistants (simple-table:read-csv #P"mp-assistants.csv" t))
 (defvar plenary_register_mps (simple-table:read-tsv #P"plenary_register_mps-skl9.tsv" t))
 
-(defvar test (simple-table:read-csv #P"test.csv"))
 
 (load "func.lisp")
-(load "select.lisp")
-
 
 
 (defun cut-parameter (command)
@@ -27,9 +24,7 @@
 	)
 )
 (defun inquiry-to-db(str)
-	(cond
-		((string-equal (car (split-by-one-space (cut-parameter str)))  "SELECT") (select-inquiry  (cdr (split-by-one-space (cut-parameter str)))))
-		(t (pprint "Error"))
+	(pprint "Error, this function exists;)"
 	)
 )
 

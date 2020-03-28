@@ -7,7 +7,6 @@
 (defvar plenary_register_mps (simple-table:read-tsv #P"plenary_register_mps-skl9.tsv" t))
 
 
-
 (defun split-by-one-dot (string)
     (loop for i = 0 then (1+ j)
           as j = (position #\. string :start i)
@@ -105,22 +104,3 @@
 )
 )
 
-(defun concat(str1 str2)
-(cond
-((string-equal str2 nil) str1)
-((string-equal str1 nil) str2)
-((or (find #\Space str1 :test #'equalp) (find #\Space str2 :test #'equalp)) (concatenate 'string str1 " " str2))
-((or (find #\= str1 :test #'equalp) (find #\= str2 :test #'equalp)) (concatenate 'string str1 str2))
-((or (find #\< str1 :test #'equalp) (find #\< str2 :test #'equalp)) (concatenate 'string str1 str2))
-((or (find #\, str1 :test #'equalp) (find #\, str2 :test #'equalp)) (concatenate 'string str1 str2))
-(t (concatenate 'string str1 " " str2))
-)
-)
-
-
-(defun get-list-before-el(lst el)
-(cond
-((null lst) nil)
-((string-equal (car lst) el) nil)
-(t (list* (car lst) (get-list-before-el (cdr lst) el)))
-))

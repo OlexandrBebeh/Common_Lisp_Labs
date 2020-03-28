@@ -4,6 +4,7 @@
 
 (load "func.lisp")
 (load "where.lisp")
+(load "order-by.lisp")
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
@@ -92,8 +93,8 @@
 
 (defun select-inquiry(lst)
 (cond
-((string-equal (car lst) "distinct") (select-distinct (cdr lst)))
-(t (chek-from (split-by-one-comma (car lst)) (cdr lst)))
+((string-equal (car lst) "distinct") (order-by (cut-list-to-el lst "by") (select-distinct (get-list-before-el (cdr lst) "order"))))
+(t (order-by (cut-list-to-el lst "by")  (chek-from (split-by-one-comma (car lst)) (get-list-before-el (cdr lst) "order"))))
 )
 )
 

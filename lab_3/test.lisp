@@ -11,6 +11,33 @@
 (load "func.lisp")
 (load "select.lisp")
 
+(defvar key_words '("select" "distinct" "from" "where" "not" "and" "or" "order" "by" "asc" "desc"))
+
+(defun del-empty(lst)
+	(cond
+		((null lst) nil)
+		((string-equal (car lst) "") (del-empty (cdr lst)))
+		(t (list* (car lst) (del-empty (cdr lst))))
+	))
+
+(defun group-by(lst)
+(cond
+((null lst) nil)
+((string-intersection (car lst) key_words) (list* (car lst) (group-by (cdr lst))))
+(t (cond
+		((string-intersection (car (cdr lst)) key_words) (list* (car lst) (group-by (cdr lst))))
+		(t (list* (concat (car lst) (car (cdr lst))) (group-by (cdr (cdr lst)))))
+		))
+)
+)
+
+(defun parser-comand(str)
+(group-by (group-by (group-by
+(del-empty (split-by-one-space str))
+)))
+)
+
+
 
 
 (defun cut-parameter (command)
@@ -27,18 +54,19 @@
 	)
 )
 (defun inquiry-to-db(str)
-	(cond
-		((string-equal (car (split-by-one-space (cut-parameter str)))  "SELECT") (select-inquiry  (cdr (split-by-one-space (cut-parameter str)))))
-		(t (pprint "Error"))
-	)
-)
+	(let ((listCommand (parser-comand str)))
+		(cond
+			((string-equal (car listCommand)  "SELECT") (select-inquiry  (cdr listCommand)))
+			(t (pprint "Error"))
+		)
+	))
 
 
 (defun execute-command(str)
 	(let ((command (parse-command str)))
 	(cond
 	  ((string-equal command "exit") (exit))
-	  ((string-equal command "inquiry") (inquiry-to-db str))
+	  ((string-equal command "inquiry") (inquiry-to-db (cut-parameter str)))
 	  ((string-equal command "load") (load-table (cut-parameter str)))
 	  ((string-equal command "show") (read-file (cut-parameter str)))
 	  (t (pprint "Error: entered command not fund!!!"))
@@ -56,7 +84,7 @@
     )
 )
 
-
-(write (execute-command "inquiry(SELECt col from map_zal-skl9.csv where row<10)"))
+;(write (parser-comand "SELECT DISTINCT col1    ,  col2      , col3   FROM   tab   WHERE    col1   = 10 AND col2 = Sir. Dit Senior OR NOT col1 < 10 "))
+(write (execute-command "inquiry(SELECt * from map_zal-skl9.csv order by col)"))
 ;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 

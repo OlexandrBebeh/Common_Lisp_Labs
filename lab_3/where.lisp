@@ -7,6 +7,14 @@
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
+
+(defun get-rows(lst table)
+	(cond 
+		((null lst) (simple-table:make-table))
+		(t (simple-table:add-to-table (aref table (car lst)) (get-rows (cdr lst) table) ))
+	)
+)
+
 (defun num-dec(digit n)
 (cond
 ((equal digit nil) -1)
@@ -45,19 +53,13 @@
 
 )
 )
-(defun get-rows(lst table)
-	(cond 
-		((null lst) (simple-table:make-table))
-		(t (simple-table:add-to-table (aref table (car lst)) (get-rows (cdr lst) table) ))
-	)
-)
+
 
 (defun where-equal(lst table)
-(get-rows
-	(append (list-of-equal-rows lst table) '(0))
-	table
-)
-)
+(
+	list-of-equal-rows lst table
+))
+
 ;---------------------------------------------------------------------------------------------------
 (defun where-rows-list-dit-less(dit table n)
 (cond
@@ -89,28 +91,64 @@
 
 )
 )
-(defun get-rows-less(lst table)
-	(cond 
-		((null lst) (simple-table:make-table))
-		(t (simple-table:add-to-table (aref table (car lst)) (get-rows (cdr lst) table) ))
+
+(defun where-less(lst table)
+(
+	list-of-less-rows lst table)
+)
+
+(defun get-list-rows(lst table)
+	(cond
+		((string-equal (car lst) "not") (set-difference (cdr (reverse (generation (- (length table) 1)))) (get-list-rows (cdr lst) table) ))
+		((find #\= (car lst) :test #'equalp) (where-equal (split-by-one-equal (car lst)) table))
+		((find #\< (car lst) :test #'equalp) (where-less (split-by-one-less (car lst)) table))
+		(t (write "don`t undestand operation after where"))
 	)
 )
 
-(defun where-less(lst table)
-(get-rows-less
-	(append (reverse (list-of-less-rows lst table)) '(0))
-	table
+(defun conditions(lst table)
+(cond
+((null lst) nil)
+((string-equal (car lst) "not") (list* (get-list-rows lst table) (conditions (cdr (cdr lst)) table)))
+((string-equal (car lst) "and") (conditions (cdr lst) table))
+((string-equal (car lst) "or") (conditions (cdr lst) table))
+(t (list* (get-list-rows lst table) (conditions (cdr lst) table)))
 )
 )
+
+(defun logic-oper-list(lst)
+(cond
+((null (cdr lst)) nil)
+((string-equal (car lst) "and") (list* (car lst) (logic-oper-list (cdr lst))))
+((string-equal (car lst) "or") (list* (car lst) (logic-oper-list (cdr lst))))
+(t (logic-oper-list (cdr lst)))
+)
+)
+
+
+
+(defun where-cond(lst operLst)
+(cond
+((null lst) lst)
+((null operLst) lst)
+((string-equal (car operLst) "and") (where-cond (list* (intersection (car lst) (car (cdr lst))) (cdr (cdr lst))) (cdr operLst)))
+(t (where-cond (list* (union (car lst) (car (cdr lst))) (cdr (cdr lst))) (cdr operLst)))
+)
+)
+
+(defun list-of-rows-cond(lst table)
+	(sort (list* 0 (car (where-cond (conditions lst table) (logic-oper-list lst)))) #'>
+	))
+
 
 (defun where-command(lst table)
-(cond
-((null lst) table)
-((find #\= (car lst) :test #'equalp) (where-equal (split-by-one-equal (car lst)) table))
-((find #\< (car lst) :test #'equalp) (where-less (split-by-one-less (car lst)) table))
-(t (write "don`t undestand operation after where"))
+(cond 
+	((null lst) table)
+	((null (cdr lst)) (get-rows (sort (list* 0 (get-list-rows lst table)) #'>) table))
+	(t (get-rows (list-of-rows-cond lst table) table))
 )
 )
 
-;(write (where-less (split-by-one-less "row<10") (load-table "map_zal-skl9.csv")))
+(write (where-command '("col=2") (load-table "map_zal-skl9.csv")))
 
+;(write (where-cond '((1 2 3) (1 5 6) (2 6 7)) (logic-oper-list '("row=16" "and" "not" "row<10" "or" "row=2"))))
