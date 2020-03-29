@@ -149,6 +149,6 @@
 )
 )
 
-(write (where-command '("col=2") (load-table "map_zal-skl9.csv")))
+;(write (where-command '("col=2") (load-table "map_zal-skl9.csv")))
 
 ;(write (where-cond '((1 2 3) (1 5 6) (2 6 7)) (logic-oper-list '("row=16" "and" "not" "row<10" "or" "row=2"))))

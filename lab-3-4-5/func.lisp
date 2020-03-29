@@ -124,3 +124,11 @@
 ((string-equal (car lst) el) nil)
 (t (list* (car lst) (get-list-before-el (cdr lst) el)))
 ))
+
+
+(defun get-col-list(col table n)
+(cond
+	((= n (length table)) nil)
+	((equal "" (aref (aref table n) col)) (get-col-list col table (+ n 1)))
+	(t (list* (aref (aref table n) col) (get-col-list col table (+ n 1))))
+))

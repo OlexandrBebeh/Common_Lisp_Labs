@@ -113,8 +113,4 @@
 )
 
 
-;(write (aref (get-rows-from-el 1 (load-table "map_zal-skl9.csv")) 13))
-
 ;(write (order-by '("col,row" "desc") (load-table "map_zal-skl9.csv") ))
-
-;(write (create-list-of-collumns (aref (load-table "map_zal-skl9.csv") 0) '("col" "row")))

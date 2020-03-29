@@ -38,12 +38,6 @@
 )
 
 
-
-
-(defun cut-parameter (command)
-	  (subseq command (+ (position #\( command) 1) (position #\) command :from-end t))
-  )
-
 (defun parse-command (commandQuery)
   (let ((openBracketPosition (position #\( commandQuery)))
 	(setq openBracketPosition (cond
@@ -85,6 +79,7 @@
 )
 
 ;(write (parser-comand "SELECT DISTINCT col1    ,  col2      , col3   FROM   tab   WHERE    col1   = 10 AND col2 = Sir. Dit Senior OR NOT col1 < 10 "))
-(write (execute-command "inquiry(SELECt * from map_zal-skl9.csv order by col)"))
+;(write (execute-command "inquiry(SELECt * from map_zal-skl9.csv order by col)"))
 ;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 
+(write (execute-command "inquiry(SELECt distinct Avg(col),Max(pos_x)   ,Count(pos_y) from map_zal-skl9.csv)"))
