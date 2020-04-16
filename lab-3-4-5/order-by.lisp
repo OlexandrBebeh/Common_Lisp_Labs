@@ -20,6 +20,7 @@
 					(t t)))
 ((and (stringp (aref x (car col))) (stringp (aref y (car col)))) (cond 
 																		((string= (aref x (car col)) (aref y (car col))) (asc x y (cdr col)))
+																		((equal (aref x (car col)) "") nil)
 																		(t (string< (aref x (car col)) (aref y (car col))))))
 ((and (numberp (aref x (car col))) (numberp (aref y (car col)))) (cond 
 																		((= (aref x (car col)) (aref y (car col))) (asc x y (cdr col)))
@@ -38,6 +39,7 @@
 					(t nil)))
 ((and (stringp (aref x (car col))) (stringp (aref y (car col)))) (cond 
 																		((string= (aref x (car col)) (aref y (car col))) (desc x y (cdr col)))
+																		((equal (aref x (car col)) "") t)
 																		(t (string> (aref x (car col)) (aref y (car col))))))
 ((and (numberp (aref x (car col))) (numberp (aref y (car col)))) (cond 
 																		((= (aref x (car col)) (aref y (car col))) (desc x y (cdr col)))
@@ -46,7 +48,6 @@
 (t nil)
 )
 )
-
 
 (defun order-asc(table col)
 (sort (get-rows-from-el 1 table) 
@@ -59,6 +60,7 @@
 					(t t)))
 ((and (stringp (aref x (car col))) (stringp (aref y (car col)))) (cond 
 																		((string= (aref x (car col)) (aref y (car col))) (asc x y (cdr col)))
+																		((equal (aref x (car col)) "") nil)
 																		(t (string< (aref x (car col)) (aref y (car col))))))
 ((and (numberp (aref x (car col))) (numberp (aref y (car col)))) (cond 
 																		((= (aref x (car col)) (aref y (car col))) (asc x y (cdr col)))
@@ -66,8 +68,11 @@
 ((equal (aref x (car col)) "") nil)
 (t t)
 ))))
+
 (defun order-desc(table col)
 (sort (get-rows-from-el 1 table) 
+
+	
 #'(lambda (x y)
 (cond
 ((null (cdr col)) (cond 
@@ -77,11 +82,11 @@
 					(t nil)))
 ((and (stringp (aref x (car col))) (stringp (aref y (car col)))) (cond 
 																		((string= (aref x (car col)) (aref y (car col))) (desc x y (cdr col)))
+																		((equal (aref x (car col)) "") t)
 																		(t (string> (aref x (car col)) (aref y (car col))))))
 ((and (numberp (aref x (car col))) (numberp (aref y (car col)))) (cond 
 																		((= (aref x (car col)) (aref y (car col))) (desc x y (cdr col)))
 																		(t (> (aref x (car col)) (aref y (car col))))))
-((equal (aref x (car col)) "") t)
 (t nil)
 ))))
 
@@ -97,8 +102,8 @@
 (defun order(col lst table)
 	(let ((colList (create-list-of-collumns  (aref table 0) col)))
 		(cond
-		((or (null lst) (string-equal (car lst) "asc")) (order-asc table colList))
-		((string-equal (car lst) "desc") (order-desc table colList))
+		((or (null lst) (string-equal (car lst) "asc")) (concatenate 'vector (vector (aref table 0)) (order-asc table colList)))
+		((string-equal (car lst) "desc") (concatenate 'vector (vector (aref table 0)) (order-desc table colList)))
 		(t table)
 	)
 )
@@ -113,4 +118,4 @@
 )
 
 
-;(write (order-by '("col,row" "desc") (load-table "map_zal-skl9.csv") ))
+;(write (order-by '("col,row") (load-table "map_zal-skl9.csv") ))

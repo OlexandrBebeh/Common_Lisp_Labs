@@ -2,20 +2,50 @@
 (load "cl-simple-table-master/cl-simple-table.asd")
 (asdf:load-system 'cl-simple-table)
 
-(defvar map_zal (simple-table:read-csv #P"map_zal-skl9.csv"))
-(defvar mp_assistants (simple-table:read-csv #P"mp-assistants.csv" t))
-(defvar plenary_register_mps (simple-table:read-tsv #P"plenary_register_mps-skl9.tsv" t))
 
 (defvar test (simple-table:read-csv #P"test.csv"))
 
+(load "group-by.lisp")
 (load "func.lisp")
-(load "select.lisp")
 
 
+(defvar key_words '("select" "distinct" "from" "where" "not" "and" "or" "order" "by" "asc" "desc" "inner" "join" "on" "full" "outer" "left" "right" "on" "group" "by" "having"))
 
-(defun cut-parameter (command)
-	  (subseq command (+ (position #\( command) 1) (position #\) command :from-end t))
-  )
+(defvar join_words '("inner" "join" "on" "full" "outer" "left" "right" "on" "union"))
+
+(defun find_join(lst)
+(cond 
+((null lst) nil)
+((string-intersection (car lst) join_words) t)
+(t (defun find_join (cdr lst)))
+)
+)
+
+(defun del-empty(lst)
+	(cond
+		((null lst) nil)
+		((string-equal (car lst) "") (del-empty (cdr lst)))
+		(t (list* (car lst) (del-empty (cdr lst))))
+	))
+
+(defun parse-list(lst)
+(cond
+	((null (cdr lst)) lst)
+	((null lst) nil)
+	((string-intersection (car lst) key_words) (list* (car lst) (parse-list (cdr lst))))
+	(t (cond
+			((string-intersection (car (cdr lst)) key_words) (list* (car lst) (parse-list (cdr lst)) ))
+			(t (parse-list (list* (concat (car lst) (car (cdr lst))) (cdr (cdr lst))))  )
+			))
+)
+)
+
+(defun parser-comand(str)
+(parse-list
+(del-empty (split-by-one-space str))
+)
+)
+
 
 (defun parse-command (commandQuery)
   (let ((openBracketPosition (position #\( commandQuery)))
@@ -27,35 +57,28 @@
 	)
 )
 (defun inquiry-to-db(str)
-	(cond
-		((string-equal (car (split-by-one-space (cut-parameter str)))  "SELECT") (select-inquiry  (cdr (split-by-one-space (cut-parameter str)))))
-		(t (pprint "Error"))
-	)
-)
+	(let ((listCommand (parser-comand str)))
+		(cond
+			((and (string-equal (car listCommand)  "SELECT") (string-intersection "group" listCommand)) (print-table (start-group-by (cdr listCommand))))
+			((and (string-equal (car listCommand)  "SELECT") (find_join listCommand)) (print-table (select-join (cdr listCommand))))
+			((string-equal (car listCommand)  "SELECT") (print-table (select-inquiry  (cdr listCommand))))
+			(t (print listCommand))
+		)
+	))
 
 
 (defun execute-command(str)
 	(let ((command (parse-command str)))
 	(cond
 	  ((string-equal command "exit") (exit))
-	  ((string-equal command "inquiry") (pprint (inquiry-to-db str)))
-	  ((string-equal command "load") (pprint (load-table (cut-parameter str))))
+	  ((string-equal command "inquiry") (inquiry-to-db (cut-parameter str)))
+	  ((string-equal command "load") (load-table (cut-parameter str)))
 	  ((string-equal command "show") (read-file (cut-parameter str)))
-	  ((string-equal command "show"))
 	  (t (pprint "Error: entered command not fund!!!"))
 	  )
 	)
 )
 
-(defun show-menu()
-(princ 
-"exit() - вихід.
-load(*ім'я таблиці*) - завантажити таблицю.
-show(*ім'я таблиці*)  - показати вміст документа.
-inquiry(*запит*) - запит до бд.
-"
-)
-)
 
 (defun start-run ()
     (loop
@@ -65,8 +88,13 @@ inquiry(*запит*) - запит до бд.
     (execute-command (read-line))
     )
 )
-(show-menu)    
-(start-run)
-;(write (execute-command "inquiry(SELECt col from map_zal-skl9.csv where row=2)"))
-;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
 
+;(execute-command "inquiry(SELECt test.csv.col   , test1.csv.col   , test.csv.pos_x, test1.csv.title from test.csv left join test1.csv on test.csv.col = test1.csv.col where test1.csv.col > 20 order by test1.csv.col desc)")
+;(execute-command "inquiry(SELECt test.csv.row, test.csv.row, avg(test1.csv.col), count(test1.csv.col) from test.csv full join test1.csv on test.csv.row = test1.csv.row group by test.csv.row having count(test1.csv.col) = 1 order by count(test1.csv.col) desc)")
+;(write (parser-comand "SELECT DISTINCT col1    ,  col2      , col3   FROM   tab   WHERE    col1   = 10 AND col2 = Sir. Dit Senior OR NOT col1 < 10 "))
+;(write (execute-command "inquiry(SELECt * from test1.csv order by col)"))
+;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
+;(start-run)
+(execute-command "inquiry(select row, max(col), avg(pos_x), count(title) from map_zal-skl9.csv group by row having row = 10)")
+;(execute-command "inquiry(SELECt * from map_zal-skl9.csv)")
+;(execute-command "inquiry(SELECt distinct Avg(col),Max(pos_x)   ,Count(pos_y) from map_zal-skl9.csv)")

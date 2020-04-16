@@ -97,12 +97,50 @@
 	list-of-less-rows lst table)
 )
 
+;--------------------------------------------------------------------------------------------------------------------------------------------
+(defun where-rows-list-dit-more(dit table n)
+(cond
+((= (length table) n) nil)
+((equal (aref (aref table n) 0) "") (where-rows-list-dit-more dit table (+ n 1)))
+((> (aref (aref table n) 0) dit) (list* n (where-rows-list-dit-more dit table (+ n 1))))
+(t (where-rows-list-dit-more dit table (+ n 1)))
+)
+)
+
+(defun where-rows-list-str-more(str table n)
+(cond
+((= (length table) n) nil)
+((string> (aref (aref table n) 0) str) (list* n (where-rows-list-str-more str table (+ n 1))))
+(t (where-rows-list-str-more str table (+ n 1)))
+)
+)
+
+(defun list-of-more-rows(lst table)
+(cond
+((= (length (car (cdr lst))) (num-dec (parse-integer (car (cdr lst)) :junk-allowed t) 0))
+		(where-rows-list-dit-more
+		(parse-integer (car (cdr lst)) :junk-allowed t)
+		(simple-table:select table (position-col (car lst) (aref table 0) 0)) 1))
+
+(t 		(where-rows-list-str-more
+		(car (cdr lst))
+		(simple-table:select table (position-col (car lst) (aref table 0) 0)) 1))
+
+)
+)
+
+(defun where-more(lst table)
+(
+	list-of-more-rows lst table)
+)
+
 (defun get-list-rows(lst table)
 	(cond
 		((string-equal (car lst) "not") (set-difference (cdr (reverse (generation (- (length table) 1)))) (get-list-rows (cdr lst) table) ))
 		((find #\= (car lst) :test #'equalp) (where-equal (split-by-one-equal (car lst)) table))
 		((find #\< (car lst) :test #'equalp) (where-less (split-by-one-less (car lst)) table))
-		(t (write "don`t undestand operation after where"))
+		((find #\> (car lst) :test #'equalp) (where-more (split-by-one-more (car lst)) table))
+		(t )
 	)
 )
 
@@ -148,7 +186,7 @@
 	(t (get-rows (list-of-rows-cond lst table) table))
 )
 )
-
+;inquiry(SELECT col, pos_x, pos_y From map_zal-skl9.csv where col = 40 or pos_x < 100)
 ;(write (where-command '("col=2") (load-table "map_zal-skl9.csv")))
 
 ;(write (where-cond '((1 2 3) (1 5 6) (2 6 7)) (logic-oper-list '("row=16" "and" "not" "row<10" "or" "row=2"))))

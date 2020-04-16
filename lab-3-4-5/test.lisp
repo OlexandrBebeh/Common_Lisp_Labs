@@ -11,7 +11,17 @@
 (load "func.lisp")
 (load "select.lisp")
 
-(defvar key_words '("select" "distinct" "from" "where" "not" "and" "or" "order" "by" "asc" "desc"))
+(defvar key_words '("select" "distinct" "from" "where" "not" "and" "or" "order" "by" "asc" "desc" "inner" "join" "on" "full" "outer" "left" "right" "on" "union"))
+
+(defvar join_words '("inner" "join" "on" "full" "outer" "left" "right" "on" "union"))
+
+(defun find_join(lst)
+(cond 
+((null lst) nil)
+((string-intersection (car lst) join_words) t)
+(t (defun find_join (cdr lst)))
+)
+)
 
 (defun del-empty(lst)
 	(cond
@@ -50,7 +60,8 @@
 (defun inquiry-to-db(str)
 	(let ((listCommand (parser-comand str)))
 		(cond
-			((string-equal (car listCommand)  "SELECT") (select-inquiry  (cdr listCommand)))
+			(((string-equal (car listCommand)  "SELECT") and (find_join listCommand)) (write listCommand))
+			((string-equal (car listCommand)  "SELECT") (write (select-inquiry  (cdr listCommand))))
 			(t (pprint "Error"))
 		)
 	))
@@ -79,7 +90,7 @@
 )
 
 ;(write (parser-comand "SELECT DISTINCT col1    ,  col2      , col3   FROM   tab   WHERE    col1   = 10 AND col2 = Sir. Dit Senior OR NOT col1 < 10 "))
-;(write (execute-command "inquiry(SELECt * from map_zal-skl9.csv order by col)"))
+;(write (execute-command "inquiry(SELECt * from test.csv inner join test1.csv on col = id_fr)"))
 ;(pprint (simple-table:read-csv #P"mp-posts_full.csv"))
-
-(write (execute-command "inquiry(SELECt distinct Avg(col),Max(pos_x)   ,Count(pos_y) from map_zal-skl9.csv)"))
+;(write (execute-command "inquiry(SELECt Avg(col),Max(pos_x)   ,Count(pos_y) from map_zal-skl9.csv)"))
+;(princ (db-func '("Count(id_mp)" "Avg(col)" "Max(pos_y)") (load-table "map_zal-skl9.csv")))

@@ -4,21 +4,20 @@
 
 (load "func.lisp")
 
-(defun cut-parameter (command)
-	  (subseq command (+ (position #\( command) 1) (position #\) command :from-end t))
-  )
 
-(defun chekc-function(str)
-(cond
-((search "Avg(" str :test #'char-equal) t)
-((search "Max(" str :test #'char-equal) t)
-((search "Count(" str :test #'char-equal) t)
-(t nil)
-)
+
+(defun max-str(lst str)
+	(cond 
+		((null lst) str)
+		((string< str (car lst)) (max-str (cdr lst) (car lst)))
+		(t (max-str (cdr lst) str))
+	)
 )
 
-(defun maximum (list)
-  (reduce #'max list))
+(defun maximum (lst)
+  (cond
+  	((stringp (car lst)) (max-str lst ""))
+  	(t (reduce #'max lst))))
 
 (defun Max-func(col table)
 (

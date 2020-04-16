@@ -2,12 +2,9 @@
 (load "cl-simple-table-master/cl-simple-table.asd")
 (asdf:load-system 'cl-simple-table)
 
-(load "func.lisp")
 (load "where.lisp")
 (load "order-by.lisp")
 (load "functions.lisp")
-
-(defvar test (simple-table:read-csv #P"test.csv"))
 
 
 (defun create-list-of-collumns(vec lst)
@@ -94,10 +91,10 @@
 
 (defun select-inquiry(lst)
 (cond
-((and (string-equal (car lst) "distinct") (chekc-function (car (cdr lst)))) (db-func (split-by-one-comma (car (cdr lst))) (select-distinct (get-list-before-el (list* "*" (cdr (cdr lst))) "order"))))
-((chekc-function (car lst)) (chek-from '("*") (db-func (split-by-one-comma (car (cdr lst))) (get-list-before-el (cdr lst) "order"))))
-((string-equal (car lst) "distinct") (order-by (cut-list-to-el lst "by") (select-distinct (get-list-before-el (cdr lst) "order"))))
-(t (order-by (cut-list-to-el lst "by")  (chek-from (split-by-one-comma (car lst)) (get-list-before-el (cdr lst) "order"))))
+	((and (string-equal (car lst) "distinct") (chekc-function (car (cdr lst)))) (db-func (split-by-one-comma (car (cdr lst))) (select-distinct (get-list-before-el (list* "*" (cdr (cdr lst))) "order"))))
+	((chekc-function (car lst)) (db-func (split-by-one-comma (car lst)) (chek-from '("*") (get-list-before-el (cdr lst) "order"))))
+	((string-equal (car lst) "distinct") (order-by (cut-list-to-el lst "by") (select-distinct (get-list-before-el (cdr lst) "order"))))
+	(t (order-by (cut-list-to-el lst "by")  (chek-from (split-by-one-comma (car lst)) (get-list-before-el (cdr lst) "order"))))
 )
 )
 
