@@ -6,7 +6,7 @@
 (load "full_join.lisp")
 
 (defun distinct-join(lst)
-(let ((table (select-create-table (split-by-one-comma (car lst)) (where-command (cut-list-to-el lst "where") (first-join lst)))))
+(let ((table (select-create-table (split-by-one-comma (car lst)) (where-command (cut-list-to-el lst "where") (start-case (take-case-ex lst) (first-join lst))))))
 	(get-distinct-rows
 		(reverse (build-distincts-list (split-by-one-comma (car lst)) table))
 		table)
@@ -19,7 +19,7 @@
 		((chekc-function (car lst)) (db-func (split-by-one-comma (car lst)) (select-create-table '("*") (where-command (cut-list-to-el lst "where") (first-join lst)))))
 		((string-equal "distinct" (car lst)) (order-by (cut-list-to-el lst "by") (distinct-join (cdr lst))))
 		(t	(order-by (cut-list-to-el lst "by") 
-										(select-create-table (split-by-one-comma (car lst)) (where-command (cut-list-to-el lst "where") (first-join lst)))) )
+										(select-create-table (split-by-one-comma (car lst)) (where-command (cut-list-to-el lst "where") (start-case (take-case-ex lst) (first-join lst))))) )
 	)
 )
 

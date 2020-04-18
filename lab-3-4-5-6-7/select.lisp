@@ -5,11 +5,12 @@
 (load "where.lisp")
 (load "order-by.lisp")
 (load "functions.lisp")
-
+(load "case.lisp")
 
 (defun create-list-of-collumns(vec lst)
 (cond 
 ((null lst) nil)
+((string-equal "" (car lst)) (create-list-of-collumns vec (cdr lst)))
 ((string-intersection (car lst) (vector-to-list vec 0)) (list* (position-col (car lst) vec 0) (create-list-of-collumns vec (cdr lst))))
 (t (create-list-of-collumns vec (cdr lst)))
 )
@@ -26,20 +27,28 @@
 (select-all lst (create-list-of-collumns vec lst) (length vec))
 )
 
+(defun filter-nil(lst)
+	(cond
+		((null lst) '())
+		((equal (car lst) nil) (filter-nil (cdr lst)))
+		(t (list* (car lst) (filter-nil (cdr lst))))
+	)
+)
 
 
 (defun select-create-table(cols table)
 	(let ((listOfCol (get-list-of-collumns (aref table 0) cols)))
 		(cond
 			((null listOfCol) nil)
-			(t (simple-table:select1 table listOfCol))
+			(t (simple-table:select1 table (filter-nil listOfCol)))
 		))
 )
 
 (defun chek-from(cols lst)
 (cond
-((string-equal "FROM" (car lst))  (select-create-table cols (where-command (cut-list-to-el lst "where") (load-table (car (cut-list-to-el lst "from"))))))
-(t (pprint "FROM not found"))
+	((null lst) nil)
+	((string-equal "FROM" (car lst)) (select-create-table cols (where-command (cut-list-to-el lst "where") (start-case (take-case-ex lst) (load-table (car (cut-list-to-el lst "from")))))))
+	(t (write lst))
 )
 )
 
@@ -91,10 +100,10 @@
 
 (defun select-inquiry(lst)
 (cond
-	((and (string-equal (car lst) "distinct") (chekc-function (car (cdr lst)))) (db-func (split-by-one-comma (car (cdr lst))) (select-distinct (get-list-before-el (list* "*" (cdr (cdr lst))) "order"))))
-	((chekc-function (car lst)) (db-func (split-by-one-comma (car lst)) (chek-from '("*") (get-list-before-el (cdr lst) "order"))))
-	((string-equal (car lst) "distinct") (order-by (cut-list-to-el lst "by") (select-distinct (get-list-before-el (cdr lst) "order"))))
-	(t (order-by (cut-list-to-el lst "by")  (chek-from (split-by-one-comma (car lst)) (get-list-before-el (cdr lst) "order"))))
+	((and (string-equal (car lst) "distinct") (chekc-function (car (cdr lst)))) (db-func (split-by-one-comma (car (cdr lst))) (select-distinct (list* "*" (cdr (cdr lst))))))
+	((chekc-function (car lst)) (db-func (split-by-one-comma (car lst)) (chek-from '("*") (cdr lst))))
+	((string-equal (car lst) "distinct") (order-by (cut-list-to-el lst "by") (select-distinct (cdr lst))))
+	(t (order-by (cut-list-to-el lst "by") (chek-from (split-by-one-comma (car lst)) (cdr lst))))
 )
 )
 

@@ -100,7 +100,7 @@
 )
 
 (defun order(col lst table)
-	(let ((colList (create-list-of-collumns  (aref table 0) col)))
+	(let ((colList (create-list-of-collumns (aref table 0) col)))
 		(cond
 		((or (null lst) (string-equal (car lst) "asc")) (concatenate 'vector (vector (aref table 0)) (order-asc table colList)))
 		((string-equal (car lst) "desc") (concatenate 'vector (vector (aref table 0)) (order-desc table colList)))

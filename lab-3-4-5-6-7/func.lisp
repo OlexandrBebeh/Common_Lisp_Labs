@@ -58,8 +58,17 @@
           collect (subseq string i j)
           while j))
 
+(defun get-except-last(lst)
+	(cond 
+		((null lst) nil)
+		((null (cdr lst)) nil)
+		(t (list* (car lst) (get-except-last (cdr lst))))
+		)
+)
+
 (defun get-last(lst)
 	(cond 
+		((null lst) nil)
 		((null (cdr lst)) (car lst))
 		(t (get-last (cdr lst)))
 		)
@@ -197,7 +206,7 @@
 
 (defun generation(n)
 	(cond
-		((= n 0) nil)
+		((<= n 0) nil)
 		(t (list* (- n 1) (generation (- n 1))))
 	)
 )
@@ -233,7 +242,7 @@
 )
 
 (defun check-symb(str)
-(and (alpha-char-p (char str 0)) (alpha-char-p (char str (- (length str) 1)))
+(and (or (digit-char-p (char str 0)) (alpha-char-p (char str 0))) (or (digit-char-p (char str (- (length str) 1))) (alpha-char-p (char str (- (length str) 1))))
 )
 )
 
